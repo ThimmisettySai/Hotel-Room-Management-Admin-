@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hotel Room Management</title>
+    <link rel="stylesheet" href="cssss.css">
+</head>
+<body>
+    <h1>Hotel Room Management</h1>
+
+    <h2>Book a Room</h2>
+    <form id="bookingForm">
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" required><br><br>
+
+        <label for="room">Room:</label>
+        <select id="room" name="room" required>
+            
+        </select><br><br>
+
+        <label for="start_time">Start Time:</label>
+        <input type="datetime-local" id="start_time" name="start_time" required><br><br>
+
+        <label for="end_time">End Time:</label>
+        <input type="datetime-local" id="end_time" name="end_time" required><br><br>
+
+        <input type="submit" value="Book">
+    </form>
+
+    <h2>Manage Bookings</h2>
+    <a href="view form.html">View All Bookings</a>
+    <table id="bookingsTable">
+        <thead>
+            <tr>
+                <th>Email</th>
+                <th>Room</th>
+                <th>Start Time</th>
+                <th>End Time</th>
+                <th>Price</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+           
+        </tbody>
+    </table>
+
+    
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const rooms = {
+                'A1': {'type': 'A', 'price': 100},
+                'A2': {'type': 'A', 'price': 100},
+                'B1': {'type': 'B', 'price': 80},
+                'B2': {'type': 'B', 'price': 80},
+                'B3': {'type': 'B', 'price': 80},
+                'C1': {'type': 'C', 'price': 50},
+                'C2': {'type': 'C', 'price': 50},
+                'C3': {'type': 'C', 'price': 50},
+                'C4': {'type': 'C', 'price': 50},
+                'C5': {'type': 'C', 'price': 50}
+            };
+
+            const bookings = JSON.parse(localStorage.getItem('bookings')) || [];
+
+            const bookingForm = document.getElementById('bookingForm');
+            const bookingsTable = document.getElementById('bookingsTable');
+            const roomSelect = document.getElementById('room');
+
+            // Function to populate room options
+            function populateRooms() {
+                Object.keys(rooms).forEach(room => {
+                    const option = document.createElement('option');
+                    option.value = room;
+                    option.textContent = room;
+                    roomSelect.appendChild(option);
+                });
+            }
+
+            // Function for booking price
+            function calculatePrice(startTime, endTime, room) {
+                const durationHours = (new Date(endTime) - new Date(startTime)) / 3600000;
+                return durationHours * rooms[room].price;
+            }
+
+            // Function to display bookings
+            function displayBookings() {
+                const bookingsBody = bookingsTable.querySelector('tbody');
+                bookingsBody.innerHTML = '';
+
+                bookings.forEach((booking, index) => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${booking.email}</td>
+                        <td>${booking.room}</td>
+                        <td>${booking.start_time}</td>
+                        <td>${booking.end_time}</td>
+                        <td>${booking.price}</td>
+                        <td><button onclick="editBooking(${index})">Edit</button> <button onclick="deleteBooking(${index})">Delete</button></td>
+                    `;
+                    bookingsBody.appendChild(row);
+                });
+            }
+
+            // Function to add a new booking
+            bookingForm.addEventListener('submit', function(event) {
+                event.preventDefault();
+                const email = this.email.value;
+                const room = this.room.value;
+                const startTime = this.start_time.value;
+                const endTime = this.end_time.value;
+                const price = calculatePrice(startTime, endTime, room);
+                const booking = { email, room, start_time: startTime, end_time: endTime, price };
+                bookings.push(booking);
+                displayBookings();
+                this.reset();
+                saveBookings(); // Save bookings after adding a new booking
+            });
+
+            // Function to edit a booking
+            window.editBooking = function(index) {
+                const email = prompt('Enter new email:', bookings[index].email);
+                const room = prompt('Enter new room:', bookings[index].room);
+                const startTime = prompt('Enter new start time:', bookings[index].start_time);
+                const endTime = prompt('Enter new end time:', bookings[index].end_time);
+                const price = calculatePrice(startTime, endTime, room);
+                bookings[index] = { email, room, start_time: startTime, end_time: endTime, price };
+                displayBookings();
+                saveBookings(); // Save bookings after editing
+            };
+
+            // Function to delete a booking
+            window.deleteBooking = function(index) {
+                if (confirm('Are you sure you want to delete this booking?')) {
+                    bookings.splice(index, 1);
+                    displayBookings();
+                    saveBookings(); // Save bookings after deletion
+                }
+            };
+
+            // Function to save bookings to localStorage
+            function saveBookings() {
+                localStorage.setItem('bookings', JSON.stringify(bookings));
+            }
+
+            // Initial setup
+            populateRooms();
+            displayBookings();
+        });
+    </script>
+</body>
+</html>
