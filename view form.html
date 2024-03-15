@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Bookings</title>
+    <link rel="stylesheet" href="cssss.css">
+</head>
+<body>
+    <h1>View Bookings</h1>
+
+    <h2>Filters</h2>
+    <label for="filterRoom">Filter by Room Number and Type:</label>
+    <input type="text" id="filterRoom"><br><br>
+
+    <label for="filterStartTime">Filter by Start Time:</label>
+    <input type="datetime-local" id="filterStartTime"><br><br>
+
+    <label for="filterEndTime">Filter by End Time:</label>
+    <input type="datetime-local" id="filterEndTime"><br><br>
+
+    <button id="filterButton">Filter Bookings</button>
+
+    <h2>Bookings</h2>
+    <table id="bookingsTable">
+        <thead>
+            <tr>
+                <th>Email</th>
+                <th>Room</th>
+                <th>Start Time</th>
+                <th>End Time</th>
+                <th>Price</th>
+            </tr>
+        </thead>
+        <tbody id="bookingsBody">
+            
+        </tbody>
+    </table>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const bookings = JSON.parse(localStorage.getItem('bookings')) || [];
+
+            function displayBookings(filteredBookings) {
+                const bookingsBody = document.getElementById('bookingsBody');
+                bookingsBody.innerHTML = '';
+
+                filteredBookings.forEach(booking => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${booking.email}</td>
+                        <td>${booking.room}</td>
+                        <td>${booking.start_time}</td>
+                        <td>${booking.end_time}</td>
+                        <td>${booking.price}</td>
+                    `;
+                    bookingsBody.appendChild(row);
+                });
+            }
+
+            function filterBookings() {
+                const filterRoom = document.getElementById('filterRoom').value.trim().toUpperCase();
+                const filterStartTime = Date.parse(document.getElementById('filterStartTime').value);
+                const filterEndTime = Date.parse(document.getElementById('filterEndTime').value);
+
+                const filteredBookings = bookings.filter(booking => {
+                    const roomMatch = booking.room.toUpperCase().includes(filterRoom);
+                    const startTimeMatch = isNaN(filterStartTime) || Date.parse(booking.start_time) >= filterStartTime;
+                    const endTimeMatch = isNaN(filterEndTime) || Date.parse(booking.end_time) <= filterEndTime;
+                    return roomMatch && startTimeMatch && endTimeMatch;
+                });
+
+                displayBookings(filteredBookings);
+            }
+
+            document.getElementById('filterButton').addEventListener('click', filterBookings);
+
+            displayBookings(bookings); // Display bookings when the page loads
+        });
+    </script>
+</body>
+</html>
